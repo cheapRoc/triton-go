@@ -1,0 +1,43 @@
+memo = "159b81fdaab4ce49556e6fa6761279e35309f333d2b4b9a7039e9bb387a5b090"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/abdullin/seq"
+  packages = ["."]
+  revision = "d5467c17e7afe8d8f08f556c6c811a50c3feb28d"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/errwrap"
+  packages = ["."]
+  revision = "7554cd9344cec97297fa6649b055a8c98c2a1e55"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-cleanhttp"
+  packages = ["."]
+  revision = "3573b8b52aa7b37b9358d966a898feb387f62437"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-multierror"
+  packages = ["."]
+  revision = "ed905158d87462226a13fe39ddf685ea65f1c11f"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-retryablehttp"
+  packages = ["."]
+  revision = "2d5f5dbd904dbad432492c3ca2c12c72c9e3045a"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/sean-/seed"
+  packages = ["."]
+  revision = "e2103e2c35297fb7e17febb81e49b312087a2372"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["curve25519","ed25519","ed25519/internal/edwards25519","ssh","ssh/agent"]
+  revision = "5a033cc77e57eca05bdb50522851d29e03569cbe"
