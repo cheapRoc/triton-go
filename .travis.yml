@@ -1,0 +1,16 @@
+---
+language: go
+go:
+  - tip
+
+sudo: false
+
+env:
+  - GO15VENDOREXPERIMENT=1
+
+install:
+  - make vendor
+
+script:
+  - make lint
+  # - make test

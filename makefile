@@ -1,6 +1,4 @@
 SHELL := /bin/bash
-.SHELLFLAGS := -o pipefail -euc
-.DEFAULT_GOAL := test
 
 test-deps:
 	@echo Installing dev/test dependencies
@@ -14,7 +12,7 @@ clean:
 	rm -rf vendor
 
 lint:
-	@bash ./scripts/lint.sh
+	@golint
 
 test:
 	@go test -v
