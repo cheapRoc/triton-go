@@ -16,3 +16,6 @@ lint:
 
 test:
 	@go test -v
+
+acceptance:
+	TRITON_TEST=1 go test -v
