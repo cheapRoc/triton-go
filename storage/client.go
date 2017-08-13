@@ -49,3 +49,9 @@ func (c *StorageClient) Objects() *ObjectsClient {
 func (c *StorageClient) SnapLinks() *SnapLinksClient {
 	return &SnapLinksClient{c.Client}
 }
+
+// Multipart returns a MultipartClient used for accessing functions pertaining
+// to Multipart functionality of the Triton Object Storage API.
+func (c *StorageClient) Multipart() *MultipartClient {
+	return &MultipartClient{c.Client}
+}
