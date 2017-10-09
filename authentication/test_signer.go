@@ -1,7 +1,11 @@
 package authentication
 
+// TestSigner represents an authentication key signer which we can use for
+// testing purposes only. This will largely be a stub to send through client
+// unit tests.
 type TestSigner struct{}
 
+// NewTestSigner constructs a new instance of test signer
 func NewTestSigner() (Signer, error) {
 	return &TestSigner{}, nil
 }
