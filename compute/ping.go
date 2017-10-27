@@ -9,26 +9,37 @@ import (
 	"github.com/joyent/triton-go/client"
 )
 
+const pingEndpoint = "/--ping"
+
 type CloudAPI struct {
 	Versions []string `json:"versions"`
 }
 
-type Ping struct {
+type PingOutput struct {
 	Ping     string   `json:"ping"`
 	CloudAPI CloudAPI `json:"cloudapi"`
 }
 
-func (c *ComputeClient) Ping(ctx context.Context) (*Ping, error) {
+// Ping sends a request to the '/--ping' endpoint and returns a `pong` as well
+// as a list of API version numbers your instance of CloudAPI is presenting.
+func (c *ComputeClient) Ping(ctx context.Context) (*PingOutput, error) {
 	reqInputs := client.RequestInput{
 		Method: http.MethodGet,
-		Path:   "/--ping",
+		Path:   pingEndpoint,
 	}
 	response, err := c.Client.ExecuteRequestRaw(ctx, reqInputs)
 	if response != nil {
 		defer response.Body.Close()
 	}
 
-	if response == nil || response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
+	if response == nil {
+		return nil, &client.TritonError{
+			StatusCode: 0,
+			Code:       "EmptyResponse",
+		}
+	}
+
+	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
 		return nil, &client.TritonError{
 			StatusCode: response.StatusCode,
 			Code:       "ResourceNotFound",
@@ -39,7 +50,7 @@ func (c *ComputeClient) Ping(ctx context.Context) (*Ping, error) {
 			c.Client.DecodeError(response.StatusCode, response.Body))
 	}
 
-	var result *Ping
+	var result *PingOutput
 	decoder := json.NewDecoder(response.Body)
 	if err = decoder.Decode(&result); err != nil {
 		return nil, errwrap.Wrapf("Error decoding Get response: {{err}}", err)
