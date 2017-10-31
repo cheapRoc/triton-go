@@ -3,6 +3,7 @@ package compute
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/errwrap"
@@ -28,17 +29,12 @@ func (c *ComputeClient) Ping(ctx context.Context) (*PingOutput, error) {
 		Path:   pingEndpoint,
 	}
 	response, err := c.Client.ExecuteRequestRaw(ctx, reqInputs)
-	if response != nil {
+	if response == nil {
+		return nil, fmt.Errorf("Ping request has empty response")
+	}
+	if response.Body != nil {
 		defer response.Body.Close()
 	}
-
-	if response == nil {
-		return nil, &client.TritonError{
-			StatusCode: 0,
-			Code:       "EmptyResponse",
-		}
-	}
-
 	if response.StatusCode == http.StatusNotFound || response.StatusCode == http.StatusGone {
 		return nil, &client.TritonError{
 			StatusCode: response.StatusCode,

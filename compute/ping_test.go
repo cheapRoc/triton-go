@@ -2,6 +2,7 @@ package compute_test
 
 import (
 	"context"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -14,42 +15,9 @@ import (
 	"github.com/joyent/triton-go/testutils"
 )
 
-// test empty response
 // test borked 404 response (TritonError)
 // test borked 410 response (TritonError)
 // test bad JSON decode
-
-func pingSuccessFunc(req *http.Request) (*http.Response, error) {
-	body := strings.NewReader(`{
-	"ping": "pong",
-	"cloudapi": {
-		"versions": ["7.0.0", "7.1.0", "7.2.0", "7.3.0", "8.0.0"]
-	}
-}`)
-	header := http.Header{}
-	header.Add("Content-Type", "application/json")
-	return &http.Response{
-		StatusCode: 200,
-		Header:     header,
-		Body:       ioutil.NopCloser(body),
-	}, nil
-}
-
-func buildClient() *compute.ComputeClient {
-	testSigner, _ := authentication.NewTestSigner()
-	httpClient := &client.Client{
-		Authorizers: []authentication.Signer{testSigner},
-		HTTPClient: &http.Client{
-			Transport: testutils.DefaultMockTransport,
-			CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		},
-	}
-	return &compute.ComputeClient{
-		Client: httpClient,
-	}
-}
 
 func TestPing(t *testing.T) {
 	computeClient := buildClient()
@@ -82,31 +50,155 @@ func TestPing(t *testing.T) {
 		}
 	})
 
-	// t.Run("empty response", func(t *testing.T) {
-	// 	testutils.RegisterResponder("GET", "/--ping", pingSuccessFunc)
+	t.Run("EOF decode", func(t *testing.T) {
+		testutils.RegisterResponder("GET", "/--ping", pingEmptyFunc)
 
-	// 	resp, err := do(context.Background(), computeClient)
-	// 	if err != nil {
-	// 		t.Fatal(err)
-	// 	}
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
 
-	// 	if resp.Ping != "pong" {
-	// 		t.Errorf("ping was not pong: expected %s", resp.Ping)
-	// 	}
+		if !strings.Contains(err.Error(), "EOF") {
+			t.Errorf("expected error to contain EOF: found %s", err)
+		}
+	})
 
-	// 	versions := []string{"7.0.0", "7.1.0", "7.2.0", "7.3.0", "8.0.0"}
-	// 	if !reflect.DeepEqual(resp.CloudAPI.Versions, versions) {
-	// 		t.Errorf("ping did not contain CloudAPI versions: expected %s", versions)
-	// 	}
-	// })
+	t.Run("error", func(t *testing.T) {
+		testutils.RegisterResponder("GET", "/--ping", pingErrorFunc)
 
-	// t.Run("404", func(t *testing.T) {
-	// })
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
 
-	// t.Run("410", func(t *testing.T) {
-	// })
+		blankError := "Ping request has empty response"
 
-	// t.Run("JSON decode", func(t *testing.T) {
-	// })
+		if err.Error() != blankError {
+			t.Errorf("expected error to equal defaultError: found %s", err)
+		}
+	})
 
+	t.Run("404", func(t *testing.T) {
+		testutils.RegisterResponder("GET", "/--ping", ping404Func)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "ResourceNotFound") {
+			t.Errorf("expected error to be a 404: found %s", err)
+		}
+	})
+
+	t.Run("410", func(t *testing.T) {
+		testutils.RegisterResponder("GET", "/--ping", ping410Func)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "ResourceNotFound") {
+			t.Errorf("expected error to be a 410: found %s", err)
+		}
+	})
+
+	t.Run("bad decode", func(t *testing.T) {
+		testutils.RegisterResponder("GET", "/--ping", pingDecodeFunc)
+
+		_, err := do(context.Background(), computeClient)
+		if err == nil {
+			t.Fatal(err)
+		}
+
+		if !strings.Contains(err.Error(), "invalid character") {
+			t.Errorf("expected decode to fail: found %s", err)
+		}
+	})
+}
+
+var defaultError = errors.New("we got the funk")
+var defaultHeader = http.Header{}
+
+func pingSuccessFunc(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+	"ping": "pong",
+	"cloudapi": {
+		"versions": ["7.0.0", "7.1.0", "7.2.0", "7.3.0", "8.0.0"]
+	}
+}`)
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func pingEmptyFunc(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+	}, nil
+}
+
+func ping404Func(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+	return &http.Response{
+		StatusCode: 404,
+		Header:     header,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+	}, nil
+}
+
+func ping410Func(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+	return &http.Response{
+		StatusCode: 410,
+		Header:     header,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+	}, nil
+}
+
+func pingErrorFunc(req *http.Request) (*http.Response, error) {
+	return nil, defaultError
+}
+
+func pingDecodeFunc(req *http.Request) (*http.Response, error) {
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+
+	body := strings.NewReader(`{
+(ham!(//
+}`)
+
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
+func buildClient() *compute.ComputeClient {
+	testSigner, _ := authentication.NewTestSigner()
+	httpClient := &client.Client{
+		Authorizers: []authentication.Signer{testSigner},
+		HTTPClient: &http.Client{
+			Transport: testutils.DefaultMockTransport,
+			CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		},
+	}
+	return &compute.ComputeClient{
+		Client: httpClient,
+	}
 }
