@@ -52,6 +52,13 @@ func (m *MockTransport) RegisterResponder(method, url string, responder Responde
 	m.responders[method+" "+url] = responder
 }
 
+// Clear clears out all the mock responders that have been set on a particular
+// MockTransport object. This comes in especially handy when utilizing the
+// global DefaultMockTRansport and is utilized by the DeactivateClient func.
+func (m *MockTransport) Clear() {
+	m.responders = make(map[string]Responder)
+}
+
 // DefaultMockTransport allows users to easily and globally alter the default
 // RoundTripper for all http requests.
 var DefaultMockTransport = &MockTransport{
@@ -68,6 +75,7 @@ func ActivateClient(failNoResponder bool) {
 // Deactivate replaces our `DefaultMockTransport` with the
 // `http.DefaultTransport`.
 func DeactivateClient() {
+	DefaultMockTransport.Clear()
 	http.DefaultClient.Transport = http.DefaultTransport
 }
 
