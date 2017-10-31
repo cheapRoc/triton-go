@@ -67,6 +67,8 @@ func main() {
 		log.Fatalf("couldn't create new compute client: %s", err)
 	}
 
+	c.Client.InsecureSkipTLSVerify()
+
 	resp, err := c.Ping(context.Background())
 	if err != nil {
 		log.Fatalf("couldn't ping endpoint: %s", err)
