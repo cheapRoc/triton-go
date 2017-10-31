@@ -21,14 +21,9 @@ const nilContext = "nil context"
 
 var MissingKeyIdError = errors.New("Default SSH agent authentication requires SDC_KEY_ID")
 
-type httpClient interface {
-	Do(*http.Request) (*http.Response, error)
-}
-
 // Client represents a connection to the Triton Compute or Object Storage APIs.
 type Client struct {
-	// HTTPClient *http.Client
-	HTTPClient  httpClient
+	HTTPClient  *http.Client
 	Authorizers []authentication.Signer
 	TritonURL   url.URL
 	MantaURL    url.URL
@@ -105,9 +100,7 @@ func (c *Client) InsecureSkipTLSVerify() {
 	if c.HTTPClient == nil {
 		return
 	}
-	if client, ok := c.HTTPClient.(*http.Client); ok {
-		client.Transport = httpTransport(true)
-	}
+	c.HTTPClient.Transport = httpTransport(true)
 }
 
 func httpTransport(insecureSkipTLSVerify bool) *http.Transport {
