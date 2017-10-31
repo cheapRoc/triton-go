@@ -19,6 +19,22 @@ import (
 // test borked 410 response (TritonError)
 // test bad JSON decode
 
+func pingSuccessFunc(req *http.Request) (*http.Response, error) {
+	body := strings.NewReader(`{
+	"ping": "pong",
+	"cloudapi": {
+		"versions": ["7.0.0", "7.1.0", "7.2.0", "7.3.0", "8.0.0"]
+	}
+}`)
+	header := http.Header{}
+	header.Add("Content-Type", "application/json")
+	return &http.Response{
+		StatusCode: 200,
+		Header:     header,
+		Body:       ioutil.NopCloser(body),
+	}, nil
+}
+
 func buildClient() *compute.ComputeClient {
 	testSigner, _ := authentication.NewTestSigner()
 	httpClient := &client.Client{
@@ -49,22 +65,7 @@ func TestPing(t *testing.T) {
 	}
 
 	t.Run("successful", func(t *testing.T) {
-		testutils.RegisterResponder("GET", "/--ping", func(req *http.Request) (*http.Response, error) {
-			body := strings.NewReader(`{
-	"ping": "pong",
-	"cloudapi": {
-		"versions": ["7.0.0", "7.1.0", "7.2.0", "7.3.0", "8.0.0"]
-	}
-}`)
-			header := http.Header{}
-			header.Add("Content-Type", "application/json")
-
-			return &http.Response{
-				StatusCode: 200,
-				Header:     header,
-				Body:       ioutil.NopCloser(body),
-			}, nil
-		})
+		testutils.RegisterResponder("GET", "/--ping", pingSuccessFunc)
 
 		resp, err := do(context.Background(), computeClient)
 		if err != nil {
@@ -82,11 +83,20 @@ func TestPing(t *testing.T) {
 	})
 
 	// t.Run("empty response", func(t *testing.T) {
-	// 	ctx := context.Background()
-	// 	compute.Client.SetResponse(nil)
-	// 	resp, err := do(compute)
-	// 	if err == nil {
-	// 		t.Error(err)
+	// 	testutils.RegisterResponder("GET", "/--ping", pingSuccessFunc)
+
+	// 	resp, err := do(context.Background(), computeClient)
+	// 	if err != nil {
+	// 		t.Fatal(err)
+	// 	}
+
+	// 	if resp.Ping != "pong" {
+	// 		t.Errorf("ping was not pong: expected %s", resp.Ping)
+	// 	}
+
+	// 	versions := []string{"7.0.0", "7.1.0", "7.2.0", "7.3.0", "8.0.0"}
+	// 	if !reflect.DeepEqual(resp.CloudAPI.Versions, versions) {
+	// 		t.Errorf("ping did not contain CloudAPI versions: expected %s", versions)
 	// 	}
 	// })
 
