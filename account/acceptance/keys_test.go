@@ -1,4 +1,4 @@
-package account
+package account_acc
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/abdullin/seq"
 	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/account"
 	"github.com/joyent/triton-go/testutils"
 )
 
@@ -18,25 +19,25 @@ func TestAccKey_Create(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "key",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return account.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "key",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*AccountClient)
+					c := client.(*account.AccountClient)
 					ctx := context.Background()
-					input := &CreateKeyInput{
+					input := &account.CreateKeyInput{
 						Name: keyName,
 						Key:  testAccCreateKeyMaterial,
 					}
 					return c.Keys().Create(ctx, input)
 				},
 				CleanupFunc: func(client interface{}, callState interface{}) {
-					c := client.(*AccountClient)
+					c := client.(*account.AccountClient)
 					ctx := context.Background()
-					input := &DeleteKeyInput{
+					input := &account.DeleteKeyInput{
 						KeyName: keyName,
 					}
 					c.Keys().Delete(ctx, input)
@@ -63,25 +64,25 @@ func TestAccKey_Get(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "key",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return account.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "key",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*AccountClient)
+					c := client.(*account.AccountClient)
 					ctx := context.Background()
-					input := &CreateKeyInput{
+					input := &account.CreateKeyInput{
 						Name: keyName,
 						Key:  testAccCreateKeyMaterial,
 					}
 					return c.Keys().Create(ctx, input)
 				},
 				CleanupFunc: func(client interface{}, callState interface{}) {
-					c := client.(*AccountClient)
+					c := client.(*account.AccountClient)
 					ctx := context.Background()
-					input := &DeleteKeyInput{
+					input := &account.DeleteKeyInput{
 						KeyName: keyName,
 					}
 					c.Keys().Delete(ctx, input)
@@ -91,9 +92,9 @@ func TestAccKey_Get(t *testing.T) {
 			&testutils.StepAPICall{
 				StateBagKey: "getKey",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*AccountClient)
+					c := client.(*account.AccountClient)
 					ctx := context.Background()
-					input := &GetKeyInput{
+					input := &account.GetKeyInput{
 						KeyName: keyName,
 					}
 					return c.Keys().Get(ctx, input)
@@ -121,25 +122,25 @@ func TestAccKey_Delete(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "key",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return account.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "key",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*AccountClient)
+					c := client.(*account.AccountClient)
 					ctx := context.Background()
-					input := &CreateKeyInput{
+					input := &account.CreateKeyInput{
 						Name: keyName,
 						Key:  testAccCreateKeyMaterial,
 					}
 					return c.Keys().Create(ctx, input)
 				},
 				CleanupFunc: func(client interface{}, callState interface{}) {
-					c := client.(*AccountClient)
+					c := client.(*account.AccountClient)
 					ctx := context.Background()
-					input := &DeleteKeyInput{
+					input := &account.DeleteKeyInput{
 						KeyName: keyName,
 					}
 					c.Keys().Delete(ctx, input)
@@ -149,9 +150,9 @@ func TestAccKey_Delete(t *testing.T) {
 			&testutils.StepAPICall{
 				StateBagKey: "noop",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*AccountClient)
+					c := client.(*account.AccountClient)
 					ctx := context.Background()
-					input := &DeleteKeyInput{
+					input := &account.DeleteKeyInput{
 						KeyName: keyName,
 					}
 					return nil, c.Keys().Delete(ctx, input)
@@ -161,9 +162,9 @@ func TestAccKey_Delete(t *testing.T) {
 			&testutils.StepAPICall{
 				ErrorKey: "getKeyError",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*AccountClient)
+					c := client.(*account.AccountClient)
 					ctx := context.Background()
-					input := &GetKeyInput{
+					input := &account.GetKeyInput{
 						KeyName: keyName,
 					}
 					return c.Keys().Get(ctx, input)
