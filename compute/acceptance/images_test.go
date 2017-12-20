@@ -155,7 +155,7 @@ func TestAccImagesListInput(t *testing.T) {
 func TestAccImagesGet(t *testing.T) {
 	const stateKey = "image"
 	const imageId = "95f6c9a6-a2bd-11e2-b753-dbf2651bf890"
-	publishedAt, err := time.Parse(time.RFC3339, "2013-04-11T21:05:28Z")
+	publishedAt, err := time.Parse(time.RFC3339, "2013-04-11T21:04:09Z")
 	if err != nil {
 		t.Fatal("Reference time does not parse as RFC3339")
 	}
