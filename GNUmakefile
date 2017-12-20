@@ -1,5 +1,6 @@
-TEST?=$$(go list ./... |grep -Ev 'vendor|examples|testutils')
-GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
+UNITS ?= $$(go list ./... |grep -Ev 'vendor|examples|testutils|acceptance')
+ACCEPTANCE ?= $$(go list ./... |grep 'acceptance')
+GOFMT_FILES ?= $$(find . -name '*.go' |grep -v vendor)
 
 default: vet errcheck test
 
@@ -9,16 +10,17 @@ tools:: ## Download and install all dev/code tools
 	go get -u github.com/golang/lint/golint
 	go get -u github.com/kisielk/errcheck
 	@echo "==> Installing test package dependencies"
-	go test -i $(TEST) || exit 1
+	go test -i $(UNITS) || exit 1
+	go test -i $(INTEGRATIONS) || exit 2
 
 test:: ## Run unit tests
 	@echo "==> Running unit tests"
-	@echo $(TEST) | \
+	@echo $(UNITS) | \
 		xargs -t go test -v $(TESTARGS) -timeout=30s -parallel=1 | grep -Ev 'TRITON_TEST|TestAcc'
 
 testacc:: ## Run acceptance tests
 	@echo "==> Running acceptance tests"
-	TRITON_TEST=1 go test $(TEST) -v $(TESTARGS) -run -timeout 120m
+	TRITON_TEST=1 go test -v $(ACCEPTANCE) $(TESTARGS) -timeout 120m
 
 vet:: ## Check for unwanted code constructs
 	@echo "go vet ."
