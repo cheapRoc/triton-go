@@ -1,4 +1,4 @@
-package compute
+package compute_acc
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/abdullin/seq"
 	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/compute"
 	"github.com/joyent/triton-go/testutils"
 )
 
@@ -22,16 +23,16 @@ func TestAccDataCenters_Get(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "datacenter",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return compute.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "datacenter",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*ComputeClient)
+					c := client.(*compute.ComputeClient)
 					ctx := context.Background()
-					input := &GetDataCenterInput{
+					input := &compute.GetDataCenterInput{
 						Name: dataCenterName,
 					}
 					return c.Datacenters().Get(ctx, input)
@@ -58,16 +59,16 @@ func TestAccDataCenters_List(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: "datacenter",
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return compute.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: "datacenters",
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*ComputeClient)
+					c := client.(*compute.ComputeClient)
 					ctx := context.Background()
-					input := &ListDataCentersInput{}
+					input := &compute.ListDataCentersInput{}
 					return c.Datacenters().List(ctx, input)
 				},
 			},
@@ -82,7 +83,7 @@ func TestAccDataCenters_List(t *testing.T) {
 					toFind := []string{"us-east-1", "eu-ams-1"}
 					for _, dcName := range toFind {
 						found := false
-						for _, dc := range dcs.([]*DataCenter) {
+						for _, dc := range dcs.([]*compute.DataCenter) {
 							if dc.Name == dcName {
 								found = true
 								if dc.URL == "" {

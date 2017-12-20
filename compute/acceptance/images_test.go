@@ -1,4 +1,4 @@
-package compute
+package compute_acc
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/abdullin/seq"
 	triton "github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/compute"
 	"github.com/joyent/triton-go/testutils"
 )
 
@@ -23,16 +24,16 @@ func TestAccImagesList(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: stateKey,
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return compute.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: stateKey,
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*ComputeClient)
+					c := client.(*compute.ComputeClient)
 					ctx := context.Background()
-					input := &ListImagesInput{}
+					input := &compute.ListImagesInput{}
 					return c.Images().List(ctx, input)
 				},
 			},
@@ -47,7 +48,7 @@ func TestAccImagesList(t *testing.T) {
 					toFind := []string{image1Id, image2Id}
 					for _, imageID := range toFind {
 						found := false
-						for _, image := range images.([]*Image) {
+						for _, image := range images.([]*compute.Image) {
 							if image.ID == imageID {
 								found = true
 								state.Put(imageID, image)
@@ -95,16 +96,16 @@ func TestAccImagesListInput(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: stateKey,
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return compute.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: stateKey,
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*ComputeClient)
+					c := client.(*compute.ComputeClient)
 					ctx := context.Background()
-					input := &ListImagesInput{
+					input := &compute.ListImagesInput{
 						Name:    "ubuntu-14.04",
 						Type:    "lx-dataset",
 						Version: "20160219",
@@ -123,7 +124,7 @@ func TestAccImagesListInput(t *testing.T) {
 					toFind := []string{image1Id}
 					for _, imageID := range toFind {
 						found := false
-						for _, image := range images.([]*Image) {
+						for _, image := range images.([]*compute.Image) {
 							if image.ID == imageID {
 								found = true
 								state.Put(imageID, image)
@@ -165,16 +166,16 @@ func TestAccImagesGet(t *testing.T) {
 			&testutils.StepClient{
 				StateBagKey: stateKey,
 				CallFunc: func(config *triton.ClientConfig) (interface{}, error) {
-					return NewClient(config)
+					return compute.NewClient(config)
 				},
 			},
 
 			&testutils.StepAPICall{
 				StateBagKey: stateKey,
 				CallFunc: func(client interface{}) (interface{}, error) {
-					c := client.(*ComputeClient)
+					c := client.(*compute.ComputeClient)
 					ctx := context.Background()
-					input := &GetImageInput{
+					input := &compute.GetImageInput{
 						ImageID: imageId,
 					}
 					return c.Images().Get(ctx, input)
