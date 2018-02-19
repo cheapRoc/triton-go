@@ -233,10 +233,17 @@ func (c *Client) ExecuteRequestURIParams(ctx context.Context, inputs RequestInpu
 
 	// NewClient ensures there's always an authorizer (unless this is called
 	// outside that constructor).
-	authHeader, err := c.Authorizers[0].Sign(dateHeader)
+	signer := c.Authorizers[0]
+	if signer == nil {
+		return nil, pkgerrors.Wrapf(err, "unable to find auth signer")
+	}
+
+	authHeader, err := signer.Sign()
 	if err != nil {
 		return nil, pkgerrors.Wrapf(err, "unable to sign HTTP request")
 	}
+
+	req.Header.Set("date", signer.Date())
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Version", triton.CloudAPIMajorVersion)
@@ -286,15 +293,19 @@ func (c *Client) ExecuteRequestRaw(ctx context.Context, inputs RequestInput) (*h
 		return nil, pkgerrors.Wrapf(err, "unable to construct HTTP request")
 	}
 
-	dateHeader := time.Now().UTC().Format(time.RFC1123)
-	req.Header.Set("date", dateHeader)
-
 	// NewClient ensures there's always an authorizer (unless this is called
 	// outside that constructor).
-	authHeader, err := c.Authorizers[0].Sign(dateHeader)
+	signer := c.Authorizers[0]
+	if signer == nil {
+		return nil, pkgerrors.Wrapf(err, "unable to find auth signer")
+	}
+
+	authHeader, err := signer.Sign()
 	if err != nil {
 		return nil, pkgerrors.Wrapf(err, "unable to sign HTTP request")
 	}
+
+	req.Header.Set("date", signer.Date())
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Version", triton.CloudAPIMajorVersion)
@@ -353,13 +364,17 @@ func (c *Client) ExecuteRequestStorage(ctx context.Context, inputs RequestInput)
 		}
 	}
 
-	dateHeader := time.Now().UTC().Format(time.RFC1123)
-	req.Header.Set("date", dateHeader)
+	signer := c.Authorizers[0]
+	if signer == nil {
+		return nil, nil, pkgerrors.Wrapf(err, "unable to find auth signer")
+	}
 
-	authHeader, err := c.Authorizers[0].Sign(dateHeader)
+	authHeader, err := signer.Sign()
 	if err != nil {
 		return nil, nil, pkgerrors.Wrapf(err, "unable to sign HTTP request")
 	}
+
+	req.Header.Set("date", signer.Date())
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("User-Agent", triton.UserAgent())
@@ -413,13 +428,17 @@ func (c *Client) ExecuteRequestNoEncode(ctx context.Context, inputs RequestNoEnc
 		}
 	}
 
-	dateHeader := time.Now().UTC().Format(time.RFC1123)
-	req.Header.Set("date", dateHeader)
+	signer := c.Authorizers[0]
+	if signer == nil {
+		return nil, nil, pkgerrors.Wrapf(err, "unable to find auth signer")
+	}
 
-	authHeader, err := c.Authorizers[0].Sign(dateHeader)
+	authHeader, err := signer.Sign()
 	if err != nil {
 		return nil, nil, pkgerrors.Wrapf(err, "unable to sign HTTP request")
 	}
+
+	req.Header.Set("date", signer.Date())
 	req.Header.Set("Authorization", authHeader)
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Version", triton.CloudAPIMajorVersion)

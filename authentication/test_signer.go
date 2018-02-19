@@ -8,10 +8,14 @@
 
 package authentication
 
+import "time"
+
 // TestSigner represents an authentication key signer which we can use for
 // testing purposes only. This will largely be a stub to send through client
 // unit tests.
-type TestSigner struct{}
+type TestSigner struct {
+	dateHeader string
+}
 
 // NewTestSigner constructs a new instance of test signer
 func NewTestSigner() (Signer, error) {
@@ -26,7 +30,14 @@ func (s *TestSigner) KeyFingerprint() string {
 	return ""
 }
 
-func (s *TestSigner) Sign(dateHeader string) (string, error) {
+func (s *TestSigner) Date() string {
+	if s.dateHeader == "" {
+		s.dateHeader = time.Now().UTC().Format(time.RFC1123)
+	}
+	return s.dateHeader
+}
+
+func (s *TestSigner) Sign() (string, error) {
 	return "", nil
 }
 

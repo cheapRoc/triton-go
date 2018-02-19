@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
@@ -30,6 +31,7 @@ type PrivateKeySigner struct {
 	accountName             string
 	userName                string
 	hashFunc                crypto.Hash
+	dateHeader              string
 
 	privateKey *rsa.PrivateKey
 }
@@ -87,7 +89,16 @@ func NewPrivateKeySigner(input PrivateKeySignerInput) (*PrivateKeySigner, error)
 	return signer, nil
 }
 
-func (s *PrivateKeySigner) Sign(dateHeader string) (string, error) {
+func (s *PrivateKeySigner) Date() string {
+	if s.dateHeader == "" {
+		s.dateHeader = time.Now().UTC().Format(time.RFC1123)
+	}
+	return s.dateHeader
+}
+
+func (s *PrivateKeySigner) Sign() (string, error) {
+	dateHeader := s.Date()
+
 	const headerName = "date"
 
 	hash := s.hashFunc.New()

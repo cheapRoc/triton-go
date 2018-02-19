@@ -17,6 +17,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	pkgerrors "github.com/pkg/errors"
 	"golang.org/x/crypto/ssh"
@@ -34,6 +35,7 @@ type SSHAgentSigner struct {
 	accountName             string
 	userName                string
 	keyIdentifier           string
+	dateHeader              string
 
 	agent agent.Agent
 	key   ssh.PublicKey
@@ -118,7 +120,16 @@ func (s *SSHAgentSigner) MatchKey() (ssh.PublicKey, error) {
 	return matchingKey, nil
 }
 
-func (s *SSHAgentSigner) Sign(dateHeader string) (string, error) {
+func (s *SSHAgentSigner) Date() string {
+	if s.dateHeader == "" {
+		s.dateHeader = time.Now().UTC().Format(time.RFC1123)
+	}
+	return s.dateHeader
+}
+
+func (s *SSHAgentSigner) Sign() (string, error) {
+	dateHeader := s.Date()
+
 	const headerName = "date"
 
 	signature, err := s.agent.Sign(s.key, []byte(fmt.Sprintf("%s: %s", headerName, dateHeader)))
